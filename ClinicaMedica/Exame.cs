@@ -8,22 +8,15 @@ namespace ConsoleApp1.ClinicaMedica
 {
 	internal class Exame
 	{
+		private string _nome;
 		private int _prazo;
-		private string _nome{ get; set; }
-
-		public int Prazo
-		{
-			get => _prazo;
-			private set
-			{
-				if (value <= 0)
-					throw new ArgumentException("Exame deve ter prazo > 0");
-				_prazo = value;
-			}
-		}
 
 		public Exame(string nome, int prazo)
 		{
+			if (prazo <= 0)
+			{
+				throw new ArgumentException("O prazo do exame deve ser maior que zero.");
+			}
 			_nome = nome;
 			_prazo = prazo;
 		}

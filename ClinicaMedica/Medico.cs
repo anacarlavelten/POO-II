@@ -11,12 +11,13 @@ namespace ConsoleApp1.ClinicaMedica
 		private string _nome;
 		private string _CRM;
 
+		public string Nome { get => _nome; }
 		public Medico(string nome, string crm)
 		{
 			this._nome = nome;
 			this._CRM = crm;
 		}
 
-		public string Nome { get => _nome; }
+		
 	}
 }

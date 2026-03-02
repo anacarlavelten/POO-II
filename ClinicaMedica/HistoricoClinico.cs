@@ -8,17 +8,22 @@ namespace ConsoleApp1.ClinicaMedica
 {
 	internal class HistoricoClinico
 	{
-		private string _observacoes;
+		private List<string> _registros = new List<string>();
 
-		public string Observacoes
+		public void AdicionarEntrada(DateTime data, string observacao)
 		{
-			get => _observacoes;
-			set
-			{
-				if (string.IsNullOrWhiteSpace(value))
-					throw new ArgumentException("Histórico não aceita texto vazio");
-				_observacoes = value;
-			}
+			if (string.IsNullOrWhiteSpace(observacao))
+				throw new ArgumentException("O histórico não aceita texto vazio.");
+
+			_registros.Add($"[{data:dd/MM/yyyy}] - {observacao}");
+		}
+
+		// Certifique-se de que o nome é "Mostrar" para combinar com o Program.cs
+		public void Mostrar()
+		{
+			Console.WriteLine("\n=== HISTÓRICO MÉDICO COMPLETO ===");
+			if (_registros.Count == 0) Console.WriteLine("Nenhum registro encontrado.");
+			else _registros.ForEach(Console.WriteLine);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,80 +12,95 @@ namespace ConsoleApp1
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine("--- Cadastro de Clínica Médica ---");
+			HistoricoClinico hist = new HistoricoClinico();
 
-			try
+			while (true)
 			{
-				//Cadastrar dados do Médico
-				Console.Write("Digite o nome do Médico: ");
-				string nomeMed = Console.ReadLine();
-				Console.Write("Digite o CRM: ");
-				string crm = Console.ReadLine();
-				Medico medico = new Medico(nomeMed, crm);
+				Console.WriteLine("\n=== SISTEMA DA CLÍNICA MÉDICA ===");
+				Console.WriteLine("1. Agendar Nova Consulta (Cadastrar Médico/Paciente)");
+				Console.WriteLine("2. Consultar Histórico de Atendimentos");
+				Console.WriteLine("3. Cadastrar Exame");
+				Console.WriteLine("4. Sair");
+				Console.Write("Escolha uma opção: ");
+				string op = Console.ReadLine();
 
-				Console.WriteLine("\n----------------------------------");
+				if (op == "4") break;
 
-				//Cadastrar dados do Paciente
-				Console.Write("Digite o nome do Paciente: ");
-				string nomePac = Console.ReadLine();
-				Console.Write("Digite o CPF: ");
-				string cpf = Console.ReadLine();
-				Paciente paciente = new Paciente(nomePac, cpf);
-
-				Console.WriteLine("\n----------------------------------");
-
-				//Agendar a Consulta
-				Console.WriteLine("Agendamento de Consulta:");
-				Console.Write("Digite a data (formato DD/MM/AAAA): ");
-				DateTime data = DateTime.Parse(Console.ReadLine());
-
-				//Criando a consulta (a validação de data futura acontece no construtor da Consulta)
-				Consulta consulta = new Consulta(medico, paciente, data);
-				Console.WriteLine("✔ Consulta pré-agendada com sucesso!");
-
-				//Verificar se o paciente compareceu (Regra: só pode registrar comparecimento se a data da consulta for hoje ou no passado)
-				Console.Write("\nO paciente compareceu? (S/N): ");
-				string resposta = Console.ReadLine().ToUpper();
-
-				if (resposta == "S")
+				try
 				{
-					consulta.RegistrarComparecimento();
-					Console.WriteLine("✔ Comparecimento registrado.");
+					if (op == "1")
+					{
+						//Cadastro do médico
+						Console.WriteLine("\n[ CADASTRO DO MÉDICO ]");
+						Console.Write("Nome do Médico: ");
+						string nomeMed = Console.ReadLine();
+						Console.Write("CRM: ");
+						string crm = Console.ReadLine();
+						Medico medico = new Medico(nomeMed, crm);
+
+						//Cadastro do paciente
+						Console.WriteLine("\n[ CADASTRO DO PACIENTE ]");
+						Console.Write("Nome do Paciente: ");
+						string nomePac = Console.ReadLine();
+						Console.Write("CPF: ");
+						string cpf = Console.ReadLine();
+						Paciente paciente = new Paciente(nomePac, cpf);
+
+						//Agendamento da consulta
+						Console.WriteLine("\n[ DATA DA CONSULTA ]");
+						Console.Write("Digite a data (dd/mm/aaaa): ");
+						DateTime data = DateTime.Parse(Console.ReadLine(), new CultureInfo("pt-BR"));
+
+						//O construtor da Consulta já valida se a data é futura
+						Consulta consulta = new Consulta(medico, paciente, data);
+						Console.WriteLine($"✔ Consulta de {paciente.Nome} com {medico.Nome} agendada!");
+
+						//registra se o paciente compareceu ou não
+						Console.Write("\nO paciente compareceu ao consultório agora? (S/N): ");
+						if (Console.ReadLine().ToUpper() == "S")
+						{
+							consulta.RegistrarPresenca();
+
+							Console.Write("Digite a observação clínica para o histórico: ");
+							string obs = Console.ReadLine();
+
+							// Adiciona ao histórico incluindo os nomes que acabamos de cadastrar
+							string registroCompleto = $"Paciente: {paciente.Nome} | Médico: {medico.Nome} | Obs: {obs}";
+							hist.AdicionarEntrada(data, registroCompleto);
+							Console.WriteLine("✔ Dados salvos no histórico médico.");
+						}
+					}
+					else if (op == "2")
+					{
+						hist.Mostrar();
+					}
+					else if (op == "3")
+					{
+						Console.WriteLine("\n[ CADASTRO DE EXAME ]");
+						Console.Write("Nome do Exame: ");
+						string nomeE = Console.ReadLine();
+						Console.Write("Prazo de entrega em dias: ");
+						int p = int.Parse(Console.ReadLine());
+
+						// Validação de prazo > 0 ocorre dentro da classe Exame
+						new Exame(nomeE, p);
+						Console.WriteLine("✔ Exame validado e cadastrado com sucesso!");
+					}
 				}
-
-				//Histórico Clínico (Regra: não pode ser vazio, o 'set' do HistoricoClinico lançará erro se for)
-				Console.WriteLine("\n--- Registro de Histórico ---");
-				Console.Write("Digite as observações clínicas: ");
-				string obs = Console.ReadLine();
-
-				HistoricoClinico historico = new HistoricoClinico();
-				historico.Observacoes = obs; // Se estiver vazio, o 'set' lançará erro
-
-				// Registro do atendimento (Resumo)
-				Console.WriteLine("\n==================================");
-				Console.WriteLine("RESUMO DO ATENDIMENTO:");
-				Console.WriteLine($"Médico: {medico.Nome}");
-				Console.WriteLine($"Paciente: {paciente.Nome}");
-				Console.WriteLine($"Compareceu: {(consulta.Compareceu ? "Sim" : "Não")}");
-				Console.WriteLine($"Observações: {historico.Observacoes}");
-				Console.WriteLine("==================================");
-
+				catch (FormatException)
+				{
+					Console.WriteLine("\n[ERRO]: Formato de dado inválido (Data ou Número).");
+				}
+				catch (ArgumentException ex)
+				{
+					// Captura as regras de negócio: Data no passado, Prazo <= 0, Texto vazio
+					Console.WriteLine($"\n[ERRO DE VALIDAÇÃO]: {ex.Message}");
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"\n[ERRO INESPERADO]: {ex.Message}");
+				}
 			}
-			catch (FormatException)
-			{
-				Console.WriteLine("ERRO: Formato de data inválido. Use DD/MM/AAAA.");
-			}
-			catch (ArgumentException ex)
-			{
-				Console.WriteLine($"ERRO DE VALIDAÇÃO: {ex.Message}");
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"ERRO INESPERADO: {ex.Message}");
-			}
-
-			Console.WriteLine("\nPressione qualquer tecla para encerrar...");
-			Console.ReadKey();
 		}
 	}
-}
+}	

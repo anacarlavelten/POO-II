@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace ConsoleApp1.ClinicaMedica
 {
@@ -15,18 +16,15 @@ namespace ConsoleApp1.ClinicaMedica
 		private bool _realizada;
 
 		public bool Compareceu { get => _realizada; }
-		public Consulta(Medico medico, Paciente paciente, DateTime dataHorario)
+		public Consulta(Medico medico, Paciente paciente, DateTime data)
 		{
-			if(dataHorario < DateTime.Now)
-				throw new ArgumentException("A data e horário da consulta deve ser no futuro.");
+			if (data < DateTime.Now.Date)
+				throw new ArgumentException("Não é permitido agendar no passado.");
 			_medico = medico;
 			_paciente = paciente;
-			_dataHorario = dataHorario;
-			_realizada = false;
+			_dataHorario = data;
 		}
 
-		public void RegistrarComparecimento() {
-			this._realizada = true;
-		}
+		public void RegistrarPresenca() { _realizada = true; }
 	}
 }
